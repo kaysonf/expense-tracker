@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -7,7 +8,6 @@ import { UsersRepository } from './users.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
-import { QueryFailedError } from 'typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
@@ -31,9 +31,13 @@ export class UsersService {
     try {
       return await this.usersRepository.createUser(createUserDto);
     } catch (error) {
-      if (error instanceof QueryFailedError)
-        throw new InternalServerErrorException(`this handle cannot be used`);
-      else throw new InternalServerErrorException('an unknown error occurred');
+      switch (error.code) {
+        case '23505':
+          throw new ConflictException(`this handle cannot be used`);
+
+        default:
+          throw new InternalServerErrorException('an unknown error occurred');
+      }
     }
   }
 
@@ -41,12 +45,13 @@ export class UsersService {
     handle: string,
     updateUserDto: UpdateUserDto,
   ): Promise<User> {
+    // use validation pipes
     const user = await this.getUserByHandle(handle);
 
-    const { name, email } = updateUserDto;
-
-    user.name = name;
-    user.email = email;
+    for (const key in user) {
+      // unsafe, use validation pipe
+      if (key in updateUserDto) user[key] = updateUserDto[key];
+    }
 
     await user.save();
     return user;

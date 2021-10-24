@@ -42,6 +42,6 @@ export class AuthService {
     if (!user || user.password !== authCredentialsDto.password)
       throw new UnauthorizedException('Invalid Credentials');
 
-    return user;
+    return user; // return only non confidential data, currently returning password
   }
 }

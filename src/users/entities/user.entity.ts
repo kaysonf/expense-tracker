@@ -1,5 +1,6 @@
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class User extends BaseEntity {
@@ -18,6 +19,7 @@ export class User extends BaseEntity {
   @Column()
   email: string;
 
+  @Exclude({ toPlainOnly: true })
   @IsString()
   @MinLength(8)
   @Column()

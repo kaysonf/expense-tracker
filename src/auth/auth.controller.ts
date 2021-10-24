@@ -1,4 +1,4 @@
-import { Body, Controller, Post, ValidationPipe } from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, Post, UseInterceptors, ValidationPipe } from '@nestjs/common';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { AuthService } from './auth.service';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
@@ -8,6 +8,7 @@ import { User } from '../users/entities/user.entity';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @UseInterceptors(ClassSerializerInterceptor)
   @Post('/signup')
   create(@Body(ValidationPipe) createUserDto: CreateUserDto): Promise<User> {
     // TODO: dto validation, do not accept any other keys
